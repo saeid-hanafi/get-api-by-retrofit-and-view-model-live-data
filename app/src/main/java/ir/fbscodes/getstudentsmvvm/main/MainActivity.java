@@ -2,24 +2,22 @@ package ir.fbscodes.getstudentsmvvm.main;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 
-import com.google.gson.JsonObject;
-
-import java.util.List;
+import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 
 import ir.fbscodes.getstudentsmvvm.R;
+import ir.fbscodes.getstudentsmvvm.add.AddNewStudentActivity;
 import ir.fbscodes.getstudentsmvvm.main.mainViewModels.MainViewModel;
-import ir.fbscodes.getstudentsmvvm.main.mainViewModels.MainViewModelFactory;
+import ir.fbscodes.getstudentsmvvm.main.mainViewModels.MyViewModelFactory;
 import ir.fbscodes.getstudentsmvvm.model.ApiServiceProvider;
-import ir.fbscodes.getstudentsmvvm.model.Student;
 import ir.fbscodes.getstudentsmvvm.model.StudentsDatabase;
 import ir.fbscodes.getstudentsmvvm.model.StudentsRepository;
 
@@ -36,10 +34,16 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = findViewById(R.id.main_toolbar);
         setSupportActionBar(toolbar);
 
+        ExtendedFloatingActionButton fabMain = findViewById(R.id.fab_main);
+        fabMain.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, AddNewStudentActivity.class);
+            startActivity(intent);
+        });
+
         recyclerView = findViewById(R.id.rv_main);
         recyclerView.setLayoutManager(new LinearLayoutManager(this, RecyclerView.VERTICAL, false));
 
-        MainViewModel mainViewModel = new ViewModelProvider(this, new MainViewModelFactory(new StudentsRepository(StudentsDatabase.getInstance(getApplicationContext()).getStudentDao(), ApiServiceProvider.getApiService())))
+        MainViewModel mainViewModel = new ViewModelProvider(this, new MyViewModelFactory(new StudentsRepository(StudentsDatabase.getInstance(getApplicationContext()).getStudentDao(), ApiServiceProvider.getApiService())))
                 .get(MainViewModel.class);
         mainViewModel.getUsersLiveData().observe(this, students -> {
             studentAdapter = new StudentAdapter(students);

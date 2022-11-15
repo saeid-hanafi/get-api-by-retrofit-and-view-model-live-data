@@ -6,12 +6,14 @@ import androidx.lifecycle.LiveData;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.reflect.TypeToken;
 
 import java.util.List;
 
 import io.reactivex.rxjava3.core.Completable;
+import io.reactivex.rxjava3.core.Single;
 
 public class StudentsRepository {
     private static final String TAG = "StudentsRepository";
@@ -31,6 +33,7 @@ public class StudentsRepository {
                     JsonArray studentsData = jsonObject.getAsJsonArray("data");
                     if (studentsData.size() > 0) {
                         List<Student> students = gson.fromJson(studentsData.toString(), new TypeToken<List<Student>>() {}.getType());
+                        studentDao.deleteAll();
                         studentDao.insertAll(students);
                     }else{
                         Log.e(TAG, "onResponse: Total Or Student Data Is Zero!");
@@ -46,5 +49,14 @@ public class StudentsRepository {
 
     public LiveData<List<Student>> getStudents() {
         return studentDao.getStudents();
+    }
+
+    public Single<Student> save(String firstName, String lastName, String mail, String avatar) {
+        JsonObject body = new JsonObject();
+        body.addProperty("first_name", firstName);
+        body.addProperty("last_name", lastName);
+        body.addProperty("email", mail);
+        body.addProperty("avatar", avatar);
+        return apiService.addStudent(body).doOnSuccess(student -> studentDao.addStudent(student));
     }
 }
