@@ -22,12 +22,15 @@ import retrofit2.Response;
 public class MainViewModel extends ViewModel {
     private StudentsRepository repository;
     private MutableLiveData<String> error = new MutableLiveData<>();
+    private MutableLiveData<Boolean> progressBarStatus = new MutableLiveData<>();
     private Disposable disposable;
 
     public MainViewModel(StudentsRepository repository) {
         this.repository = repository;
+        progressBarStatus.setValue(true);
         repository.refreshStudents()
                 .subscribeOn(Schedulers.io())
+                .doFinally(() -> progressBarStatus.postValue(false))
                 .subscribe(new CompletableObserver() {
                     @Override
                     public void onSubscribe(@NonNull Disposable d) {
@@ -52,6 +55,10 @@ public class MainViewModel extends ViewModel {
 
     public LiveData<String> getError() {
         return error;
+    }
+
+    public MutableLiveData<Boolean> getProgressBarStatus() {
+        return progressBarStatus;
     }
 
     @Override
