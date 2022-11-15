@@ -1,8 +1,13 @@
 package ir.fbscodes.getstudentsmvvm.model;
 
+import androidx.room.Entity;
+import androidx.room.PrimaryKey;
+
 import com.google.gson.annotations.SerializedName;
 
+@Entity(tableName = "students")
 public class Student {
+    @PrimaryKey
     private int id;
     private String email;
     @SerializedName("first_name")

@@ -6,36 +6,58 @@ import androidx.lifecycle.ViewModel;
 
 import com.google.gson.JsonObject;
 
+import java.util.List;
+
+import io.reactivex.rxjava3.annotations.NonNull;
+import io.reactivex.rxjava3.core.CompletableObserver;
+import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import ir.fbscodes.getstudentsmvvm.model.ApiService;
+import ir.fbscodes.getstudentsmvvm.model.Student;
+import ir.fbscodes.getstudentsmvvm.model.StudentsRepository;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
 public class MainViewModel extends ViewModel {
-    private ApiService apiService;
-    private MutableLiveData<JsonObject> usersLiveData = new MutableLiveData<>();
-    private MutableLiveData<String> errorLiveData = new MutableLiveData<>();
+    private StudentsRepository repository;
+    private MutableLiveData<String> error = new MutableLiveData<>();
+    private Disposable disposable;
 
-    public MainViewModel(ApiService apiService) {
-        this.apiService = apiService;
-        apiService.getStudents(1).enqueue(new Callback<JsonObject>() {
-            @Override
-            public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
-                usersLiveData.setValue(response.body());
-            }
+    public MainViewModel(StudentsRepository repository) {
+        this.repository = repository;
+        repository.refreshStudents()
+                .subscribeOn(Schedulers.io())
+                .subscribe(new CompletableObserver() {
+                    @Override
+                    public void onSubscribe(@NonNull Disposable d) {
+                        disposable = d;
+                    }
 
-            @Override
-            public void onFailure(Call<JsonObject> call, Throwable t) {
-                errorLiveData.setValue(t.getMessage());
-            }
-        });
+                    @Override
+                    public void onComplete() {
+
+                    }
+
+                    @Override
+                    public void onError(@NonNull Throwable e) {
+                        error.postValue(e.getMessage());
+                    }
+                });
     }
 
-    public LiveData<JsonObject> getUsersLiveData() {
-        return usersLiveData;
+    public LiveData<List<Student>> getUsersLiveData() {
+        return repository.getStudents();
     }
 
-    public LiveData<String> getErrorLiveData() {
-        return errorLiveData;
+    public LiveData<String> getError() {
+        return error;
+    }
+
+    @Override
+    protected void onCleared() {
+        if (!disposable.isDisposed())
+            disposable.dispose();
+        super.onCleared();
     }
 }

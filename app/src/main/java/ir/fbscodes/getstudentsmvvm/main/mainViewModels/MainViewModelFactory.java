@@ -5,23 +5,20 @@ import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
 
 import ir.fbscodes.getstudentsmvvm.model.ApiService;
+import ir.fbscodes.getstudentsmvvm.model.StudentsRepository;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class MainViewModelFactory implements ViewModelProvider.Factory {
-    private ApiService apiService;
+    private StudentsRepository repository;
 
-    public MainViewModelFactory() {
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("https://reqres.in/")
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
-        apiService = retrofit.create(ApiService.class);
+    public MainViewModelFactory(StudentsRepository studentsRepository) {
+        repository = studentsRepository;
     }
 
     @NonNull
     @Override
     public <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
-        return (T) new MainViewModel(apiService);
+        return (T) new MainViewModel(repository);
     }
 }

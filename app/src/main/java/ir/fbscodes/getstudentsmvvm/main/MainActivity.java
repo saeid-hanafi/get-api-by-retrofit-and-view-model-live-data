@@ -9,9 +9,15 @@ import android.util.Log;
 
 import com.google.gson.JsonObject;
 
+import java.util.List;
+
 import ir.fbscodes.getstudentsmvvm.R;
 import ir.fbscodes.getstudentsmvvm.main.mainViewModels.MainViewModel;
 import ir.fbscodes.getstudentsmvvm.main.mainViewModels.MainViewModelFactory;
+import ir.fbscodes.getstudentsmvvm.model.ApiServiceProvider;
+import ir.fbscodes.getstudentsmvvm.model.Student;
+import ir.fbscodes.getstudentsmvvm.model.StudentsDatabase;
+import ir.fbscodes.getstudentsmvvm.model.StudentsRepository;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
@@ -21,19 +27,14 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        MainViewModel mainViewModel = new ViewModelProvider(this, new MainViewModelFactory()).get(MainViewModel.class);
-        mainViewModel.getUsersLiveData().observe(this, new Observer<JsonObject>() {
-            @Override
-            public void onChanged(JsonObject jsonObject) {
-                Log.i(TAG, "onChanged: ");
-            }
+        MainViewModel mainViewModel = new ViewModelProvider(this, new MainViewModelFactory(new StudentsRepository(StudentsDatabase.getInstance(getApplicationContext()).getStudentDao(), ApiServiceProvider.getApiService())))
+                .get(MainViewModel.class);
+        mainViewModel.getUsersLiveData().observe(this, students -> {
+            Log.i(TAG, "onCreate: ");
         });
-        
-        mainViewModel.getErrorLiveData().observe(this, new Observer<String>() {
-            @Override
-            public void onChanged(String s) {
-                Log.e(TAG, "onChanged: ");
-            }
+
+        mainViewModel.getError().observe(this, error -> {
+            Log.e(TAG, "onCreate: " + error);
         });
     }
 }
